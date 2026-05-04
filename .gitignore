@@ -1,0 +1,16 @@
+# build artifacts
+/pe
+/dist/
+*.exe
+*.test
+*.out
+
+# editor / OS
+.DS_Store
+*.swp
+.idea/
+.vscode/
+
+# local snippet store (never commit)
+snippets.json
+*.pe.json
