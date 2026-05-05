@@ -142,7 +142,7 @@ func TestInternalCompleteEmptyPrefixListsAll(t *testing.T) {
 }
 
 func TestCompletionEmitsScripts(t *testing.T) {
-	for _, shell := range []string{"bash", "zsh", "fish"} {
+	for _, shell := range []string{"bash", "zsh", "fish", "powershell", "pwsh"} {
 		app, out, _, _ := newTestApp(t)
 		out.Reset()
 		if code := app.Run([]string{"completion", shell}); code != 0 {
@@ -151,6 +151,20 @@ func TestCompletionEmitsScripts(t *testing.T) {
 		if !strings.Contains(out.String(), "pe __complete") {
 			t.Errorf("%s: script doesn't reference `pe __complete`: %q", shell, out)
 		}
+	}
+}
+
+func TestCompletionPowerShellHasRegisterArgumentCompleter(t *testing.T) {
+	app, out, _, _ := newTestApp(t)
+	if code := app.Run([]string{"completion", "powershell"}); code != 0 {
+		t.Fatalf("exit = %d", code)
+	}
+	body := out.String()
+	if !strings.Contains(body, "Register-ArgumentCompleter") {
+		t.Errorf("missing Register-ArgumentCompleter: %q", body[:200])
+	}
+	if !strings.Contains(body, "CommandName pe") {
+		t.Errorf("missing -CommandName pe: %q", body[:200])
 	}
 }
 

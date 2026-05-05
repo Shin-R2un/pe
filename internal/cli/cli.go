@@ -133,7 +133,7 @@ const helpText = "pe — copy a saved snippet and paste it instantly.\n" +
 	"  pe ?   <key>          show snippet contents (alias: show)\n" +
 	"  pe e   <key>          edit a snippet        (alias: edit)\n" +
 	"  pe d   <key>          delete a snippet      (alias: delete)\n" +
-	"  pe completion <sh>    print bash/zsh/fish tab-completion\n" +
+	"  pe completion <sh>    print bash/zsh/fish/powershell tab-completion\n" +
 	"  pe update             reinstall the latest release via `go install`\n" +
 	"  pe help               this message\n" +
 	"  pe version            print version\n" +

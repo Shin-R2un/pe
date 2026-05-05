@@ -228,8 +228,9 @@ hint: try `pe s nope`
 ## Tab completion
 
 `pe completion <shell>` emits a completion script for **bash**, **zsh**,
-or **fish**. Once installed, Tab on `pe <key>` and `pe e <key>` /
-`pe d <key>` / `pe ? <key>` completes against your registered keys.
+**fish**, or **PowerShell**. Once installed, Tab on `pe <key>` and
+`pe e <key>` / `pe d <key>` / `pe show <key>` completes against your
+registered keys.
 
 ```sh
 # zsh
@@ -244,6 +245,15 @@ pe completion bash > ~/.local/share/bash-completion/completions/pe
 
 # fish
 pe completion fish > ~/.config/fish/completions/pe.fish
+```
+
+```powershell
+# PowerShell — append to your profile and reload
+pe completion powershell >> $PROFILE
+. $PROFILE
+
+# (if $PROFILE doesn't exist yet:)
+#   New-Item -ItemType File -Path $PROFILE -Force
 ```
 
 Then reload your shell. `pe cla<TAB>` should expand to all keys

@@ -15,7 +15,7 @@ import (
 // or local `make build`), resolveVersion falls back to the Go module
 // version embedded by the toolchain so users still see "0.2.1" instead
 // of "0.2.1-dev" after `go install ...@v0.2.1`.
-var version = "0.2.4-dev"
+var version = "0.2.5-dev"
 
 func main() {
 	cli.Version = resolveVersion(version)
