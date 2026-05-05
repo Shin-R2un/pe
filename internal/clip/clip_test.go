@@ -165,6 +165,74 @@ func TestOSC52NoTTY(t *testing.T) {
 	}
 }
 
+func TestUTF16LEWithBOM(t *testing.T) {
+	got := utf16LEWithBOM("こんにちは")
+	// 5 chars × 2 bytes + 2-byte BOM
+	want := []byte{
+		0xFF, 0xFE, // BOM
+		0x53, 0x30, // こ U+3053
+		0x93, 0x30, // ん U+3093
+		0x6B, 0x30, // に U+306B
+		0x61, 0x30, // ち U+3061
+		0x6F, 0x30, // は U+306F
+	}
+	if !bytes.Equal(got, want) {
+		t.Errorf("got % X\nwant % X", got, want)
+	}
+}
+
+func TestUTF16LEWithBOMASCIIIsLossless(t *testing.T) {
+	got := utf16LEWithBOM("hi")
+	want := []byte{0xFF, 0xFE, 'h', 0x00, 'i', 0x00}
+	if !bytes.Equal(got, want) {
+		t.Errorf("got % X, want % X", got, want)
+	}
+}
+
+func TestStdinForClipExeUsesUTF16(t *testing.T) {
+	cmd := exec.Command(`C:\Windows\System32\clip.exe`)
+	r := stdinFor(cmd, "あ")
+	buf, err := io.ReadAll(r)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(buf) < 4 || buf[0] != 0xFF || buf[1] != 0xFE {
+		t.Errorf("expected UTF-16LE BOM for clip.exe, got % X", buf)
+	}
+}
+
+func TestStdinForOthersStaysUTF8(t *testing.T) {
+	for _, helper := range []string{"/usr/bin/xclip", "/usr/bin/wl-copy", "/usr/bin/pbcopy", "/usr/bin/xsel"} {
+		cmd := exec.Command(helper)
+		r := stdinFor(cmd, "あ")
+		buf, _ := io.ReadAll(r)
+		if string(buf) != "あ" {
+			t.Errorf("%s: stdin = % X, want UTF-8 %q", helper, buf, "あ")
+		}
+	}
+}
+
+func TestIsClipExeBasenameMatching(t *testing.T) {
+	cases := []struct {
+		path string
+		want bool
+	}{
+		{`C:\Windows\System32\clip.exe`, true},
+		{`/mnt/c/Windows/System32/clip.exe`, true}, // WSL fallback path
+		{`CLIP.EXE`, true},                         // case-insensitive
+		{`/usr/bin/xclip`, false},
+		{`/usr/bin/wl-copy`, false},
+		{`/usr/local/bin/clip`, false}, // not "clip.exe"
+		{``, false},
+	}
+	for _, c := range cases {
+		got := isClipExe(exec.Command(c.path))
+		if got != c.want {
+			t.Errorf("isClipExe(%q) = %v, want %v", c.path, got, c.want)
+		}
+	}
+}
+
 func TestIsWSLDetectsEnvVar(t *testing.T) {
 	t.Setenv("WSL_DISTRO_NAME", "Ubuntu")
 	if !isWSL() {

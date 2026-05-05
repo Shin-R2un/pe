@@ -26,6 +26,7 @@ package clip
 import (
 	"bytes"
 	"encoding/base64"
+	"encoding/binary"
 	"errors"
 	"fmt"
 	"io"
@@ -33,6 +34,7 @@ import (
 	"os/exec"
 	"runtime"
 	"strings"
+	"unicode/utf16"
 )
 
 // ErrNoBackend is returned when no supported clipboard backend can be used.
@@ -75,11 +77,61 @@ func nativeCopy(s string) error {
 	if err != nil {
 		return err
 	}
-	cmd.Stdin = strings.NewReader(s)
+	cmd.Stdin = stdinFor(cmd, s)
 	if out, err := cmd.CombinedOutput(); err != nil {
 		return fmt.Errorf("clipboard copy failed: %w (%s)", err, strings.TrimSpace(string(out)))
 	}
 	return nil
+}
+
+// stdinFor returns the appropriately-encoded stdin reader for `cmd`.
+//
+// Windows' `clip.exe` reads stdin as the OEM code page (CP932 in
+// Japan, etc.) by default — UTF-8 bytes are silently misinterpreted,
+// which is the classic "クリップボードに貼ると文字化け" bug. If we
+// prepend a UTF-16LE BOM (FF FE) and write the text as UTF-16LE,
+// `clip.exe` switches to Unicode mode and the clipboard receives the
+// correct content. This same fix covers WSL → clip.exe fallback.
+//
+// Every other helper (pbcopy / wl-copy / xclip / xsel) reads stdin
+// as UTF-8, so we pass the raw string.
+func stdinFor(cmd *exec.Cmd, s string) io.Reader {
+	if isClipExe(cmd) {
+		return bytes.NewReader(utf16LEWithBOM(s))
+	}
+	return strings.NewReader(s)
+}
+
+func isClipExe(cmd *exec.Cmd) bool {
+	if cmd == nil {
+		return false
+	}
+	base := strings.ToLower(basename(cmd.Path))
+	return base == "clip.exe"
+}
+
+// basename returns the trailing component of a path, treating both
+// `/` and `\` as separators. filepath.Base uses only the host OS'
+// separator, which means tests on Linux can't reason about Windows
+// paths like `C:\Windows\System32\clip.exe`.
+func basename(p string) string {
+	if i := strings.LastIndexAny(p, `/\`); i >= 0 {
+		return p[i+1:]
+	}
+	return p
+}
+
+// utf16LEWithBOM encodes s as little-endian UTF-16 prefixed with the
+// byte-order mark (FF FE). See stdinFor for why we need this.
+func utf16LEWithBOM(s string) []byte {
+	encoded := utf16.Encode([]rune(s))
+	out := make([]byte, 2+len(encoded)*2)
+	out[0] = 0xFF
+	out[1] = 0xFE
+	for i, r := range encoded {
+		binary.LittleEndian.PutUint16(out[2+i*2:], r)
+	}
+	return out
 }
 
 func osc52Copy(s string) error {
