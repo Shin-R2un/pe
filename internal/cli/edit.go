@@ -100,9 +100,21 @@ func (a *App) cmdEdit(args []string) int {
 	return 0
 }
 
-// stripJSONComments removes leading // line comments before the first '{'.
-// We only strip leading comments because JSON itself does not allow them
-// and we want users to see the hint without it breaking the parse.
+// stripJSONComments removes leading // line comments before the first
+// JSON content line, so the hint we render at the top of the editor
+// buffer doesn't break parsing.
+//
+// **Scope and limits**: only LEADING comments (consecutive `//` /
+// blank lines from the start of the buffer) are stripped. `//`
+// sequences appearing inside string values, e.g.
+//
+//	"value": "git commit // wip"
+//
+// are left intact and round-trip cleanly through encoding/json. Users
+// who paste a value that ITSELF starts a line with `//` (for example
+// a multi-line shell snippet whose first line begins with `//`) won't
+// hit this, because the leading-comment scan stops at the first non-
+// `//`, non-blank line — which is always the JSON opening `{`.
 func stripJSONComments(s string) string {
 	lines := strings.Split(s, "\n")
 	start := 0
