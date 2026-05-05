@@ -22,9 +22,14 @@ pe claude
 
 ## Install
 
+`pe` is a single statically-linked Go binary. With Go 1.18+ on PATH:
+
 ```sh
 go install github.com/Shin-R2un/pe/cmd/pe@latest
 ```
+
+The binary lands at `$(go env GOBIN)` / `$(go env GOPATH)/bin/pe`
+(typically `~/go/bin/pe`). Make sure that directory is on your `PATH`.
 
 Or build from source:
 
@@ -34,6 +39,47 @@ cd pe
 make build
 ./pe version
 ```
+
+### On multiple machines
+
+`pe`'s home is in `~/.pe/pe.json`, so each machine has its own snippet
+set unless you point them all at the same dir:
+
+```sh
+export PE_DIR=~/dotfiles/pe   # everywhere — sync via Git/Dropbox/etc.
+```
+
+For headless servers reached over SSH, the OSC 52 fallback means `pe`
+copies to **your** local clipboard — no `xclip`/`wl-copy` needed on the
+remote. See [OSC 52 over SSH/tmux](#osc-52-over-sshtmux).
+
+### Updating
+
+```sh
+pe update
+```
+
+This wraps `go install github.com/Shin-R2un/pe/cmd/pe@latest`, so it
+needs `go` on the target. `pe update` reports the old → new version
+when it finishes:
+
+```
+$ pe update
+running: go install github.com/Shin-R2un/pe/cmd/pe@latest
+updated: 0.2.0 → 0.3.0
+```
+
+If your machine is behind the public Go module proxy and you've just
+pushed a release, the proxy can return a stale 404 for ~30 minutes.
+Bypass it with:
+
+```sh
+GOPROXY=direct pe update
+```
+
+If the target has no `go` toolchain, `pe update` will tell you so —
+either install Go (https://go.dev/dl/) or grab a release binary from
+the Releases page.
 
 ### Clipboard backend
 
@@ -123,6 +169,7 @@ pe                 # interactive fuzzy picker
 | `pe e K`       | `pe edit K`           | Edit a snippet in your `$EDITOR`         |
 | `pe d K`       | `pe delete K`         | Delete a snippet                         |
 | `pe completion <sh>` | —               | Print bash / zsh / fish tab-completion   |
+| `pe update`    | —                     | Reinstall latest release via `go install` |
 | `pe help`      | `pe -h` / `pe --help` | Print usage                              |
 | `pe version`   | `pe -v`               | Print version                            |
 

@@ -11,7 +11,8 @@ var reserved = map[string]struct{}{
 	"?": {}, "show": {},
 	"help": {}, "version": {},
 	"completion": {}, "__complete": {},
-	"-h": {}, "--help": {},
+	"update": {},
+	"-h":     {}, "--help": {},
 	"-v": {}, "--version": {},
 }
 
