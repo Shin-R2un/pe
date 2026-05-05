@@ -4,6 +4,10 @@ on:
   push:
     tags:
       - 'v*'
+  # Manual re-runs against an existing tag — useful when a flaky token
+  # or proxy lag broke the previous run and we don't want to mint a
+  # fresh tag. Trigger via:  gh workflow run release --ref vX.Y.Z
+  workflow_dispatch:
 
 permissions:
   contents: write
