@@ -8,7 +8,12 @@ import (
 	"github.com/Shin-R2un/pe/internal/cli"
 )
 
+// version is the released build version. Overridden at link time by
+// goreleaser via -ldflags "-X main.version=...". Unreleased builds keep
+// the in-tree placeholder so `pe version` still prints something useful.
+var version = "0.2.1-dev"
+
 func main() {
-	app := &cli.App{}
-	os.Exit(app.Run(os.Args[1:]))
+	cli.Version = version
+	os.Exit((&cli.App{}).Run(os.Args[1:]))
 }

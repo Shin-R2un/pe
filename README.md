@@ -22,6 +22,8 @@ pe claude
 
 ## Install
 
+### Linux / macOS — `go install`
+
 `pe` is a single statically-linked Go binary. With Go 1.18+ on PATH:
 
 ```sh
@@ -31,7 +33,22 @@ go install github.com/Shin-R2un/pe/cmd/pe@latest
 The binary lands at `$(go env GOBIN)` / `$(go env GOPATH)/bin/pe`
 (typically `~/go/bin/pe`). Make sure that directory is on your `PATH`.
 
-Or build from source:
+### Windows — Scoop
+
+```powershell
+scoop bucket add r2un https://github.com/Shin-R2un/scoop-bucket
+scoop install r2un/pe
+```
+
+The same bucket also hosts [kpot](https://github.com/Shin-R2un/kpot).
+
+### Pre-built binaries
+
+Each tagged release ships archives for linux/macOS (amd64 + arm64) and
+windows (amd64) on the [Releases page](https://github.com/Shin-R2un/pe/releases),
+along with a `checksums.txt`.
+
+### From source
 
 ```sh
 git clone https://github.com/Shin-R2un/pe
@@ -55,13 +72,18 @@ remote. See [OSC 52 over SSH/tmux](#osc-52-over-sshtmux).
 
 ### Updating
 
-```sh
-pe update
-```
+Use the same channel you installed from:
 
-This wraps `go install github.com/Shin-R2un/pe/cmd/pe@latest`, so it
-needs `go` on the target. `pe update` reports the old → new version
-when it finishes:
+| Installed via | Update command           |
+| ------------- | ------------------------ |
+| `go install`  | `pe update`              |
+| Scoop         | `scoop update pe`        |
+| Source        | `git pull && make install` |
+| Release zip   | redownload the new release |
+
+`pe update` wraps `go install github.com/Shin-R2un/pe/cmd/pe@latest`, so
+it needs `go` on the target. It reports the old → new version when it
+finishes:
 
 ```
 $ pe update
@@ -78,8 +100,8 @@ GOPROXY=direct pe update
 ```
 
 If the target has no `go` toolchain, `pe update` will tell you so —
-either install Go (https://go.dev/dl/) or grab a release binary from
-the Releases page.
+either install Go (https://go.dev/dl/) or `scoop update pe` on Windows,
+or grab a release binary from the Releases page.
 
 ### Clipboard backend
 

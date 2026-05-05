@@ -15,8 +15,10 @@ import (
 	"github.com/Shin-R2un/pe/internal/store"
 )
 
-// Version is set at build time via -ldflags or stays at the default.
-var Version = "0.2.0"
+// Version is set by main at startup (which itself receives a value from
+// goreleaser's -ldflags "-X main.version=..."). Tests and stand-alone
+// imports of this package see the placeholder.
+var Version = "(devel)"
 
 // App holds CLI dependencies. Zero value uses real defaults; tests
 // override Path / Out / Err / Copy / Now.
