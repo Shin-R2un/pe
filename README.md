@@ -324,11 +324,11 @@ explicitly want to see the contents.
 Likely next steps (not yet implemented):
 
 - `pe a <key> --editor` for multi-line prompt registration
+- `pe a <key> -d "..." -t tag1,tag2` for description/tags via flags
 - `pe tag <tag>` to filter by tag
 - `pe export` / `pe import` for migration between machines
 - `pe stats` / `pe pin` for usage-aware ordering
-- shell completions
-- richer fuzzy search in interactive mode
+- richer fuzzy search in interactive mode (AND, regex, non-ASCII keys)
 
 Out of scope (use a different tool):
 

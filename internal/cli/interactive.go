@@ -118,15 +118,15 @@ func drawFrame(query string, hits []store.Snippet) int {
 	}
 	width := 0
 	for i := 0; i < limit; i++ {
-		if l := len(hits[i].Key); l > width {
-			width = l
+		if w := displayWidth(hits[i].Key); w > width {
+			width = w
 		}
 	}
 	if width > 24 {
 		width = 24
 	}
 	for i := 0; i < limit; i++ {
-		fmt.Fprintf(os.Stdout, "  %d) %-*s  %s\r\n", i+1, width, hits[i].Key, preview(hits[i], 50))
+		fmt.Fprintf(os.Stdout, "  %d) %s  %s\r\n", i+1, padRight(hits[i].Key, width), preview(hits[i], 50))
 	}
 	return 1 + limit
 }

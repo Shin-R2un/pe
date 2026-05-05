@@ -3,9 +3,29 @@ package cli
 import (
 	"fmt"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/Shin-R2un/pe/internal/store"
 )
+
+// displayWidth returns the character count for column-padding purposes.
+// Uses rune count (not byte length) so non-ASCII keys don't blow up the
+// padding. Note: CJK fullwidth chars still occupy 2 cells but are
+// counted as 1 here — good enough for now; introduce x/text/width or
+// go-runewidth if exact column alignment for CJK is needed later.
+func displayWidth(s string) int {
+	return utf8.RuneCountInString(s)
+}
+
+// padRight left-aligns s in a column `width` runes wide. fmt's `%-*s`
+// is byte-oriented and produces wrong padding for multi-byte input.
+func padRight(s string, width int) string {
+	pad := width - displayWidth(s)
+	if pad <= 0 {
+		return s
+	}
+	return s + strings.Repeat(" ", pad)
+}
 
 // preview returns a short single-line summary of a snippet for `pe l`.
 // Prefers description; falls back to a truncated first line of value.
@@ -135,8 +155,8 @@ func (a *App) cmdList(args []string) int {
 	keys := f.SortedKeys()
 	width := 0
 	for _, k := range keys {
-		if len(k) > width {
-			width = len(k)
+		if w := displayWidth(k); w > width {
+			width = w
 		}
 	}
 	if width > 24 {
@@ -144,7 +164,7 @@ func (a *App) cmdList(args []string) int {
 	}
 	for _, k := range keys {
 		s, _ := f.Get(k)
-		fmt.Fprintf(a.out(), "%-*s  %s\n", width, k, preview(*s, 60))
+		fmt.Fprintf(a.out(), "%s  %s\n", padRight(k, width), preview(*s, 60))
 	}
 	return 0
 }
@@ -167,15 +187,15 @@ func (a *App) cmdSearch(args []string) int {
 	}
 	width := 0
 	for _, s := range hits {
-		if len(s.Key) > width {
-			width = len(s.Key)
+		if w := displayWidth(s.Key); w > width {
+			width = w
 		}
 	}
 	if width > 24 {
 		width = 24
 	}
 	for _, s := range hits {
-		fmt.Fprintf(a.out(), "%-*s  %s\n", width, s.Key, preview(s, 60))
+		fmt.Fprintf(a.out(), "%s  %s\n", padRight(s.Key, width), preview(s, 60))
 	}
 	return 0
 }
